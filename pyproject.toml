@@ -29,4 +29,5 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [project.urls]
+documentation = 'https://maxdragonheart.github.io/lidar_cmn/'
 repository = 'https://github.com/MaxDragonheart/lidar_cmn'
