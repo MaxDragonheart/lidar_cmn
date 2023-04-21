@@ -1,0 +1,1 @@
+http://sit.cittametropolitana.na.it/geoserver/ows?service=wfs&version=2.0.0&request=GetFeature&typeName=sit:quadro_unione_lidar_dsm&outputFormat=SHAPE-ZIP

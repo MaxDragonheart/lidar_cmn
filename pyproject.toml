@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "lidar-cmn"
 version = "1.0.0"
-description = ""
+description = "Python package che consente il download dei dati LiDAR di Città Metropolitana di Napoli"
 authors = ["Massimiliano Moraca <info@massimilianomraca.it>"]
+license = "MIT License"
 readme = "README.md"
 packages = [{include = "lidar_cmn"}]
 
