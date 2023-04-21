@@ -11,6 +11,8 @@ packages = [{include = "lidar_cmn"}]
 python = "^3.10"
 geopandas = "^0.12.2"
 pyogrio = "^0.5.1"
+fsspec = "^2023.4.0"
+tqdm = "^4.65.0"
 
 
 [tool.poetry.group.dev.dependencies]
