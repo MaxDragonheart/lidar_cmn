@@ -1,2 +1,0 @@
-# LIDAR Città Metropolitana di Napoli
-Quadro unione delle riprese LIDAR (Light Detection and Ranging) effettuate dalla Nuova Avioriprese nel 2009 integrate dal volo 2012. Prodotto nell'ambito del progetto Cecosca (Centro Satellitare Cave).
