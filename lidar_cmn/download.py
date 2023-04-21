@@ -16,6 +16,16 @@ def download_data(
         output_folder: Path,
         output_folder_name: str
 ) -> Path:
+    """Download of Lidar Data.
+
+    Args:
+        selection: GeoDataFrame
+        output_folder: Path
+        output_folder_name: str
+
+    Returns:
+        Path
+    """
     # Make destinantion folder
     output_data_folder = output_folder.joinpath(output_folder_name)
     fs, fs_token, paths = get_fs_token_paths(output_data_folder)

@@ -48,7 +48,7 @@ def make_folder(destination_folder: Path):
     """Make folder from path.
 
     Args:
-        destination_folder: pathlib.PosixPath
+        destination_folder: Path
     """
     if not path_exists(path=destination_folder):
         fs, fs_token, paths = get_fs_token_paths(destination_folder)
@@ -61,7 +61,7 @@ def download_from_url(url: str, destination: Path) -> Path:
 
     Args:
         url: str
-        destination: pathlib.PosixPath
+        destination: Path
     """
     file_name = url.split('/')[-1]
     download_path = destination.joinpath(file_name)
