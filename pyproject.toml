@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "lidar-cmn"
+version = "1.0.0"
+description = ""
+authors = ["Massimiliano Moraca <info@massimilianomraca.it>"]
+readme = "README.md"
+packages = [{include = "lidar_cmn"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
