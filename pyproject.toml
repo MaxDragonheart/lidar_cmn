@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "lidar-cmn"
+version = "1.0.1"
+description = "Python package che consente il download dei dati LiDAR di Città Metropolitana di Napoli"
+authors = ["Massimiliano Moraca <info@massimilianomraca.it>"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+geopandas = "^0.14.3"
+pyogrio = "^0.7.2"
+fsspec = "^2024.2.0"
+tqdm = "^4.66.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+jupyter = "^1.0.0"
+matplotlib = "^3.8.3"
+mkdocs = "^1.5.3"
+mkdocs-material = "^9.5.13"
+pygments = "^2.17.2"
+mkdocstrings-python = "^1.8.0"
+
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
