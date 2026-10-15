@@ -9,8 +9,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 geopandas = "^1.0.1"
-pyogrio = "^0.9.0"
-fsspec = "^2024.2.0"
+pyogrio = ">=0.9.0"
+fsspec = ">=2024.2.0"
 tqdm = "^4.66.2"
 
 
@@ -23,6 +23,12 @@ mkdocs-material = "^9.5.13"
 pygments = "^2.17.2"
 mkdocstrings-python = "^1.8.0"
 
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: tests that use the servers of Città Metropolitana di Napoli",
+]
 
 [[tool.poetry.source]]
 name = "PyPI"
