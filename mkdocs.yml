@@ -19,7 +19,7 @@ theme:
   hljs_languages:
     - python
   include_homepage_in_sidebar: true
-  locale: it
+  language: it
 markdown_extensions:
   - abbr
   - admonition
@@ -30,7 +30,7 @@ plugins:
     - mkdocstrings:
         handlers:
           python:
-            paths: [.lidar_cmn]
+            paths: [.]
             options:
               show_root_heading: false
               show_root_toc_entry: false
