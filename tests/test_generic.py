@@ -1,3 +1,4 @@
+"""Tests of `lidar_cmn.generic`."""
 from pathlib import Path
 from urllib.error import HTTPError
 

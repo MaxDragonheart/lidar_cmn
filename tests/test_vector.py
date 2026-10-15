@@ -1,3 +1,4 @@
+"""Tests of `lidar_cmn.vector`."""
 import geopandas as gpd
 import pytest
 from geopandas import GeoDataFrame
@@ -6,6 +7,7 @@ from shapely import Polygon
 from lidar_cmn.config import limiti_amministrativi_path
 from lidar_cmn.vector import read_boundaries, read_lidar_index, read_vector, target_area, polygon_bbox
 
+# Prefix of the urls of the tiles of each LiDAR model
 urls = {
     "dtm": "https://sit.cittametropolitana.na.it/documenti/territorio/lidar_asc_dtm/",
     "dsm": "https://sit.cittametropolitana.na.it/documenti/territorio/lidar_asc/",

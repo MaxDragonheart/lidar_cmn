@@ -1,3 +1,4 @@
+"""Fixtures of the tests: a local HTTP server for the download tests."""
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -5,12 +6,17 @@ from types import SimpleNamespace
 
 import pytest
 
+# Content of the ESRI ASCII grids served by the local HTTP server
 ascii_grid = b"ncols 2\nnrows 2\nxllcorner 0\nyllcorner 0\ncellsize 1\nNODATA_value -9999\n1 2\n3 4\n"
 
 
 class _Handler(SimpleHTTPRequestHandler):
-    """Serves the files of a folder; /html/* answers with an HTML page, as a proxy
-    does, and /error/* with 503 Service Unavailable."""
+    """HTTP handler that serves the files of a folder and simulates errors.
+
+    The paths starting with `/html/` answer with an HTML page, as a proxy does,
+    and those starting with `/error/` with 503 Service Unavailable. Each
+    requested path is appended to the `requests` list of the server.
+    """
 
     def log_message(self, *args):
         pass
@@ -32,7 +38,18 @@ class _Handler(SimpleHTTPRequestHandler):
 
 @pytest.fixture
 def server(tmp_path_factory):
-    """Local HTTP server: server.url is its base url, server.requests the requested paths."""
+    """Start a local HTTP server for the download tests.
+
+    The server serves `000001.asc` and `000002.asc`, two ESRI ASCII grids, and
+    `not_a_grid.asc`, a file that isn't a grid; see `_Handler` for the errors.
+
+    Args:
+        tmp_path_factory: pytest fixture that creates the folder of the files.
+
+    Yields:
+        SimpleNamespace: `url` is the base url of the server, `requests` the
+            list of the requested paths.
+    """
     root = tmp_path_factory.mktemp("server")
     for name in ["000001.asc", "000002.asc"]:
         root.joinpath(name).write_bytes(ascii_grid)
@@ -51,5 +68,9 @@ def server(tmp_path_factory):
 
 @pytest.fixture
 def no_sleep(monkeypatch):
-    """Skip the waits between the download attempts."""
+    """Skip the waits between the download attempts.
+
+    Args:
+        monkeypatch: pytest fixture that replaces `time.sleep`.
+    """
     monkeypatch.setattr("lidar_cmn.download.time.sleep", lambda seconds: None)

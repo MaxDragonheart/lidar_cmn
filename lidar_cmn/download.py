@@ -1,3 +1,9 @@
+"""Download of a selection of LiDAR tiles.
+
+The selection is a GeoDataFrame with the `url` column, such as the tile index
+returned by `lidar_cmn.vector.read_lidar_index` or a part of it selected with
+`lidar_cmn.vector.target_area`.
+"""
 import time
 from pathlib import Path
 from typing import List, Union
@@ -11,10 +17,23 @@ from lidar_cmn.generic import download_from_url
 
 
 class DownloadError(Exception):
-    """Some files were not downloaded.
+    """Some files of a selection were not downloaded.
+
+    Raised by `download_data` after downloading the other files of the
+    selection, or when it stops after too many failures in a row.
+
+    Args:
+        message: Description of the error.
+        urls: Urls of the files not downloaded.
 
     Attributes:
-        urls: List[str], urls of the files not downloaded
+        urls (List[str]): Urls of the files not downloaded.
+
+    Examples:
+        >>> try:
+        ...     download_data(selection=selection, output_folder=Path("lidar"), output_folder_name="dtm")
+        ... except DownloadError as error:
+        ...     print(error.urls)
     """
 
     def __init__(self, message: str, urls: List[str]):
@@ -23,14 +42,16 @@ class DownloadError(Exception):
 
 
 def is_valid_file(path: Path) -> bool:
-    """Check that a downloaded file exists, isn't empty and, if it is an `.asc`
-    file, starts with the header of an ESRI ASCII grid.
+    """Check that a downloaded file is valid.
+
+    A file is valid if it exists and isn't empty; an `.asc` file must also
+    start with the header of an ESRI ASCII grid (`ncols`).
 
     Args:
-        path: Path
+        path: Path of the file.
 
     Returns:
-        bool
+        True if the file is valid, False otherwise.
     """
     if not path.is_file() or path.stat().st_size == 0:
         return False
@@ -43,7 +64,15 @@ def is_valid_file(path: Path) -> bool:
 
 
 def _is_permanent(error: Exception) -> bool:
-    """Client errors, e.g. 404 Not Found, don't change by retrying."""
+    """Check whether a download error doesn't change by retrying.
+
+    Args:
+        error: Error raised by the download.
+
+    Returns:
+        True for the HTTP client errors, e.g. 404 Not Found, except 408 Request
+        Timeout and 429 Too Many Requests; False otherwise.
+    """
     return isinstance(error, HTTPError) and error.code < 500 and error.code not in (408, 429)
 
 
@@ -56,29 +85,48 @@ def download_data(
         timeout: float = 30,
         max_consecutive_failures: int = 5
 ) -> Path:
-    """Download of Lidar Data.
+    """Download the LiDAR tiles of a selection.
 
-    The files already in the destination folder are skipped, unless overwrite is
-    True: if the download stops, run the function again to resume it.
-    Each file is downloaded up to retries times; a file that still fails doesn't
-    stop the download of the others and is reported at the end. The download
-    stops after max_consecutive_failures failed files in a row, e.g. when the
-    server is unreachable.
+    The files are saved in the folder `output_folder/output_folder_name`; a
+    progress bar shows the advancement of the download.
+
+    The valid files already in the folder are skipped, unless overwrite is
+    True: if the download stops, run the function again to resume it. Each
+    file is downloaded up to retries times, waiting 2, 4, 8... seconds between
+    the attempts; the HTTP client errors, e.g. 404 Not Found, aren't retried.
+    A file that still fails doesn't stop the download of the others and is
+    reported at the end.
 
     Args:
-        selection: GeoDataFrame, with the url column
-        output_folder: Union[str, Path]
-        output_folder_name: str
-        overwrite: bool = False, download again the files already downloaded
-        retries: int = 3, attempts for each file
-        timeout: float = 30, seconds to wait for the server
-        max_consecutive_failures: int = 5
+        selection: Tiles to download, with the url of each file in the `url`
+            column.
+        output_folder: Folder where the folder of the data is created.
+        output_folder_name: Name of the folder of the data, e.g. `"dtm"`.
+        overwrite: Download again the files already in the folder.
+        retries: Attempts for each file.
+        timeout: Seconds to wait for the server, see
+            `lidar_cmn.generic.download_from_url`.
+        max_consecutive_failures: Failed files in a row after which the
+            download stops, e.g. because the server is unreachable.
 
     Returns:
-        Path
+        Folder of the downloaded data.
 
-    Exception:
-        - DownloadError: some files were not downloaded, their urls are in DownloadError.urls
+    Raises:
+        DownloadError: If some files were not downloaded, at the end of the
+            download or after max_consecutive_failures failed files in a row.
+            Their urls are in `DownloadError.urls`.
+
+    Examples:
+        Download all the tiles of the DTM, resuming a previous download:
+
+        >>> from pathlib import Path
+        >>> from lidar_cmn.vector import read_lidar_index
+        >>> folder = download_data(
+        ...     selection=read_lidar_index(lidar_type="dtm"),
+        ...     output_folder=Path("lidar"),
+        ...     output_folder_name="dtm"
+        ... )
     """
     # Make destination folder
     output_data_folder = Path(output_folder).joinpath(output_folder_name)

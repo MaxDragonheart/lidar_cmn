@@ -1,3 +1,4 @@
+"""Tests of `lidar_cmn.download`."""
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,14 @@ from tests.conftest import ascii_grid
 
 
 def selection_of(urls) -> GeoDataFrame:
+    """Make a selection for `download_data` from a list of urls.
+
+    Args:
+        urls: Urls of the files.
+
+    Returns:
+        A GeoDataFrame with the `url` column, without geometries.
+    """
     return GeoDataFrame({"url": urls})
 
 

@@ -15,6 +15,7 @@ Le modifiche rilevanti di ogni versione. Il formato segue [Keep a Changelog](htt
 - pytest non raccoglieva i test, per il nome dei file, e i test dipendevano da percorsi assoluti della macchina dell'autore.
 - `mkdocs.yml`: la lingua del tema era impostata con `locale`, un'opzione che Material for MkDocs non riconosce, per cui il sito era in inglese (ora `language: it`); il percorso del package per mkdocstrings puntava a una cartella inesistente (`.lidar_cmn`, ora `.`).
 - Le dipendenze `pyogrio` (< 0.10) e `fsspec` (< 2025) erano bloccate su versioni vecchie.
+- Le annotazioni di tipo di `read_vector` dichiaravano `str` per `bbox`, `mask` e `rows`.
 
 ### Aggiunto
 - `read_lidar_index(lidar_type, source)`: indice dei tasselli incluso nel package o, con `source="wfs"`, quello ufficiale del servizio WFS di Città Metropolitana di Napoli.
@@ -23,6 +24,7 @@ Le modifiche rilevanti di ogni versione. Il formato segue [Keep a Changelog](htt
 - `download_from_url`: parametro `timeout`.
 - `target_area`: parametro `use_bbox`, per selezionare i tasselli sul rettangolo d'ingombro come nelle versioni precedenti.
 - `lidar_cmn.__version__`.
+- Docstring in stile Google per tutti i moduli, le classi e le funzioni, con descrizione di argomenti, valori restituiti, eccezioni ed esempi; nella documentazione, pagina Config con le impostazioni del package.
 - Test offline con un server HTTP locale e test `network` sui server di Città Metropolitana di Napoli.
 
 ### Modificato (non retrocompatibile)

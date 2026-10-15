@@ -1,25 +1,34 @@
+"""Generic utilities: paths, folders and download of a single file.
+
+The other modules of the package use these functions, but they work with any
+path and any url.
+"""
 import shutil
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 from urllib import request
 
-from fsspec import get_fs_token_paths
+from fsspec import AbstractFileSystem, get_fs_token_paths
 
 from lidar_cmn.config import logger
 
 
 def check_path(path: Union[str, Path]) -> Path:
-    """Convert string path to Path and check path existences.
+    """Convert a path to `Path` and check that it exists.
 
     Args:
-        path: Union[str, Path]
+        path: Path of a file or a folder.
 
     Returns:
-        Path
+        The path as `Path`.
 
-    Exception:
-        - Not recognized path
-        - {path} doesn't exists.
+    Raises:
+        Exception: If path is neither a `str` nor a `Path`, or if it doesn't exist.
+
+    Examples:
+        >>> from lidar_cmn.config import geodata_path
+        >>> check_path(path=str(geodata_path)) == geodata_path
+        True
     """
     if isinstance(path, str):
         target_path = Path(path)
@@ -34,7 +43,17 @@ def check_path(path: Union[str, Path]) -> Path:
         raise Exception(f"{path} doesn't exists.")
 
 
-def path_exists(path, fs=None):
+def path_exists(path: Union[str, Path], fs: Optional[AbstractFileSystem] = None) -> bool:
+    """Check that a path exists, on the local disk or on a filesystem supported
+    by fsspec.
+
+    Args:
+        path: Local path or fsspec url, e.g. `s3://bucket/key`.
+        fs: Filesystem of path. If None, it is inferred from path.
+
+    Returns:
+        True if path exists, False otherwise.
+    """
     if fs is None:
         fs, fs_token, paths = get_fs_token_paths(path)
     exists = fs.exists(path)
@@ -43,10 +62,10 @@ def path_exists(path, fs=None):
 
 
 def make_folder(destination_folder: Path):
-    """Make folder from path.
+    """Create a folder and its parents, if they don't exist.
 
     Args:
-        destination_folder: Path
+        destination_folder: Folder to create.
     """
     if not path_exists(path=destination_folder):
         fs, fs_token, paths = get_fs_token_paths(destination_folder)
@@ -55,24 +74,40 @@ def make_folder(destination_folder: Path):
 
 
 def download_from_url(url: str, destination: Path, timeout: float = 60) -> Path:
-    """Download file from url.
+    """Download a file from a url into a folder.
 
     The file is written to a temporary `.part` file, renamed only when the
-    download is complete: an interrupted download never leaves a truncated file.
+    download is complete: an interrupted download never leaves a truncated
+    file. A file with the same name in the folder is replaced.
 
     Args:
-        url: str, leading and trailing spaces are ignored
-        destination: Path
-        timeout: float, seconds to wait for the server
+        url: Url of the file. The leading and trailing spaces are ignored and
+            the name of the file is the last part of the url.
+        destination: Folder where the file is saved. It is created if it
+            doesn't exist.
+        timeout: Seconds to wait for the server, when connecting and between
+            two blocks of data.
 
     Returns:
-        Path
+        Path of the downloaded file.
 
-    Exception:
-        - urllib.error.URLError: the server is unreachable or returns an error
-        - TimeoutError: the server doesn't answer within timeout
-        - {url} returned an HTML page instead of the file.
-        - Incomplete download of {url}.
+    Raises:
+        urllib.error.HTTPError: If the server answers with an HTTP error, e.g.
+            404 Not Found.
+        urllib.error.URLError: If the server is unreachable or doesn't answer
+            within timeout.
+        TimeoutError: If the server stops sending the file for more than
+            timeout seconds.
+        Exception: If the server returns an HTML page instead of the file, as
+            proxies do, or if the download is incomplete.
+
+    Examples:
+        >>> from pathlib import Path
+        >>> download_from_url(
+        ...     url="https://sit.cittametropolitana.na.it/documenti/territorio/lidar_asc_dtm/005813.asc",
+        ...     destination=Path("lidar")
+        ... ).name
+        '005813.asc'
     """
     url = url.strip()
     file_name = url.split('/')[-1]

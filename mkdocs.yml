@@ -10,6 +10,7 @@ nav:
       - Download: ./download.md
       - Generic: ./generic.md
       - Vector: ./vector.md
+      - Config: ./config.md
   - Tutorial: ./tutorial.md
 theme:
   name: material

@@ -1,3 +1,26 @@
+"""Settings of the package: logging, data shipped with the package, WFS service.
+
+Attributes:
+    logger (logging.Logger): Logger of the package, named `lidar_cmn`. It has
+        only a `logging.NullHandler`: its messages are shown if the application
+        configures logging, e.g. with `logging.basicConfig(level=logging.INFO)`.
+    log_format (str): Format of the log messages used by the package before
+        version 2.0.0, to pass to `logging.basicConfig(format=log_format)`.
+    raster_nodata (int): NoData value of the LiDAR tiles.
+    geodata_path (pathlib.Path): Folder of the data shipped with the package.
+    quadro_unione_path (pathlib.Path): GeoPackage of the tile index, with the
+        layers `dtm` and `dsm`.
+    limiti_amministrativi_path (pathlib.Path): GeoPackage of the boundaries of
+        the municipalities of Città Metropolitana di Napoli.
+    limiti_amministrativi_layer (str): Layer of the boundaries in
+        `limiti_amministrativi_path`.
+    lidar_types (tuple[str, ...]): Available LiDAR models, `"dtm"` and `"dsm"`.
+    lidar_crs (str): Coordinate reference system of the tile index and of the
+        boundaries, EPSG:32633 (WGS 84 / UTM zone 33N).
+    wfs_url (str): WFS service of Città Metropolitana di Napoli that publishes
+        the official tile index.
+    wfs_layers (dict[str, str]): WFS layer of the tile index of each LiDAR model.
+"""
 import logging
 from pathlib import Path
 
