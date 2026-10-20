@@ -2,6 +2,20 @@
 
 Le modifiche rilevanti di ogni versione. Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e la numerazione delle versioni segue [Semantic Versioning](https://semver.org/lang/it/).
 
+## [2.1.0] - 2026-10-20
+
+### Aggiunto
+- Modulo `lidar_cmn.raster`, per riunire i tasselli scaricati in un raster virtuale GDAL (VRT) senza copiarne i dati:
+  - `build_vrt(folder, lidar_type)`: crea il VRT dei tasselli di una cartella e restituisce un `VrtSummary` con i tasselli inclusi, spostati, ricampionati ed esclusi. Il VRT ha celle di 1 m sulla griglia più diffusa e dichiara EPSG:32633. I tasselli su griglie spostate vengono spostati sulla cella più vicina, di meno di mezza cella. Dove due tasselli si sovrappongono si vede il rilievo 2012. I tasselli con celle diverse da 1 m vengono ricampionati se si sovrappongono ai comuni della Città Metropolitana, altrimenti vengono esclusi;
+  - `write_vrt`, `read_header`, `grid_offset` e `AsciiGridHeader`, per usare i grid ESRI ASCII anche fuori dal caso dei LiDAR;
+  - `write_prj_files(folder)`: scrive il `.prj` di ogni tassello, che i file `.asc` non hanno.
+- Impostazione `raster_cellsize` in `lidar_cmn.config`.
+- Dipendenza esplicita `pyproj` (già richiesta da `geopandas`) e, per i test, `rasterio`.
+- Pagine Mosaico VRT e Raster della documentazione.
+
+### Corretto
+- `test_intermediate_certificates_sit` falliva dietro un proxy che ispeziona il traffico HTTPS, per esempio Zscaler: il proxy sostituisce il certificato del server con uno della propria autorità, di cui `certifi` non si fida. Ora il test viene saltato quando il certificato del server non è emesso da Sectigo.
+
 ## [2.0.0] - 2026-10-20
 
 ### Corretto

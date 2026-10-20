@@ -8,6 +8,8 @@ Attributes:
     log_format (str): Format of the log messages used by the package before
         version 2.0.0, to pass to `logging.basicConfig(format=log_format)`.
     raster_nodata (int): NoData value of the LiDAR tiles.
+    raster_cellsize (float): Cell size of the LiDAR tiles, in meters; a few
+        tiles have a different one.
     geodata_path (pathlib.Path): Folder of the data shipped with the package.
     quadro_unione_path (pathlib.Path): GeoPackage of the tile index, with the
         layers `dtm` and `dsm`.
@@ -39,6 +41,7 @@ logger.addHandler(logging.NullHandler())
 log_format = '%(asctime)s | %(process)d - %(message)s'
 
 raster_nodata = -9999
+raster_cellsize = 1.0
 
 # Base geodata shipped with the package
 geodata_path = Path(__file__).parent.joinpath("geodata")
