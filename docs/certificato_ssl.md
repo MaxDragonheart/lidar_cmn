@@ -251,6 +251,8 @@ Alcune reti aziendali intercettano il traffico HTTPS e lo firmano di nuovo con u
 - su Linux e macOS basta indicare il file PEM della radice aziendale con la variabile d'ambiente `SSL_CERT_FILE` (o una cartella con `SSL_CERT_DIR`), che `ssl_context` legge. Le radici di `certifi` e l'intermedio incluso restano comunque attivi;
 - in alternativa si può passare un contesto SSL proprio a `download_from_url` con il parametro `context`.
 
+Il caso si è verificato il 20/10/2026 su un PC Windows con Zscaler. Da un certo momento il certificato ricevuto da `sit.cittametropolitana.na.it` era emesso da *Zscaler Intermediate Root CA* invece che da Sectigo. Il download con `ssl_context` ha continuato a funzionare, perché la radice Zscaler è nell'archivio di Windows. Il test `test_intermediate_certificates_sit`, che usa solo `certifi` e l'intermedio incluso, non può fidarsi di Zscaler: quando il certificato non è emesso da Sectigo il test viene saltato e ne indica il motivo.
+
 ## Segnalazione al gestore del server
 
 La soluzione definitiva è configurare la catena completa sul server. Un testo da inviare al SIT di Città Metropolitana di Napoli:

@@ -169,6 +169,13 @@ def test_ssl_context_sit():
 @pytest.mark.parametrize("verify_flags", [ssl.VERIFY_DEFAULT, ssl.VERIFY_X509_STRICT | ssl.VERIFY_X509_PARTIAL_CHAIN])
 def test_intermediate_certificates_sit(verify_flags: ssl.VerifyFlags):
     print("test_intermediate_certificates_sit")
+    # A proxy that inspects the HTTPS traffic, as in many corporate networks,
+    # replaces the certificate of the server with one of its own authority,
+    # trusted by the operating system but not by certifi
+    issuer = dict(name for rdn in handshake(context=ssl_context())["issuer"] for name in rdn)
+    if issuer.get("organizationName") != "Sectigo Limited":
+        pytest.skip(f"The certificate of {sit_host} is issued by {issuer.get('commonName')}: TLS inspection by a proxy.")
+
     # Without the certificates of the operating system, certifi and the
     # intermediate shipped with the package are enough: the download works on
     # every operating system. The second verify_flags are those of
