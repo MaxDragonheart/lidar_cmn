@@ -196,6 +196,13 @@ Test `network` (`pytest -m network`), sul server reale:
 
 Controprova, sullo stesso server: con le sole radici di `certifi`, senza l'intermedio, la connessione fallisce con `unable to get local issuer certificate`.
 
+La GitHub Action `.github/workflows/test.yml` esegue questi test su macchine Linux, Windows e macOS reali (i runner di GitHub):
+
+- i test offline con Python dalla 3.10 alla 3.14;
+- i test `network` con Python 3.10 e 3.14. Con Python 3.14 `ssl_context` usa anche i flag di verifica introdotti con Python 3.13.
+
+I test girano a ogni push e pull request, e ogni lunedì alle 06:00 UTC.
+
 ## Manutenzione
 
 Le scadenze da tenere d'occhio:
@@ -203,7 +210,7 @@ Le scadenze da tenere d'occhio:
 - **20/11/2026**: scade il certificato del server. Al rinnovo Sectigo potrebbe firmarlo con un intermedio diverso da R36;
 - **21/03/2036**: scade l'intermedio R36.
 
-Dopo un rinnovo del certificato del server, eseguire i test `network`. Se falliscono con `CERTIFICATE_VERIFY_FAILED`:
+L'esecuzione settimanale della GitHub Action segnala un cambio di certificato: i test `network` falliscono su tutti i sistemi operativi. GitHub esegue le pianificazioni solo sul branch predefinito del repository e le sospende dopo 60 giorni senza attività. In quel caso, o per un controllo immediato, eseguire i test `network` a mano (`pytest -m network`) o avviare la Action da GitHub con *Run workflow*. Se i test falliscono con `CERTIFICATE_VERIFY_FAILED`:
 
 1. leggere l'emittente del nuovo certificato e l'indirizzo AIA del suo intermedio:
 

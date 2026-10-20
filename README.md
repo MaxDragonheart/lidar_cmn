@@ -1,4 +1,6 @@
 # lidar_cmn
+[![Test](https://github.com/MaxDragonheart/lidar_cmn/actions/workflows/test.yml/badge.svg)](https://github.com/MaxDragonheart/lidar_cmn/actions/workflows/test.yml)
+
 Python package che consente il download dei dati LiDAR di Città Metropolitana di Napoli
 
 I dati sono il DTM e il DSM delle riprese LiDAR effettuate dalla Nuova Avioriprese nel 2009, integrate dal volo 2012, prodotti nell'ambito del progetto Cecosca (Centro Satellitare Cave) e pubblicati dal [SIT di Città Metropolitana di Napoli](https://sit.cittametropolitana.na.it/downloads.php). Ciascuno dei due modelli è diviso in 5451 tasselli da 500 × 500 m, con risoluzione di 1 m, in formato ESRI ASCII grid (`.asc`).
@@ -79,6 +81,11 @@ L'indice dei tasselli e i limiti amministrativi sono in EPSG:32633 (WGS 84 / UTM
 pytest                    # tutti i test
 pytest -m "not network"   # esclude i test che usano i server di Città Metropolitana di Napoli
 ```
+
+La GitHub Action [`.github/workflows/test.yml`](.github/workflows/test.yml) esegue i test a ogni push e pull request, e ogni lunedì alle 06:00 UTC:
+
+- i test offline su Linux, Windows e macOS, con Python 3.10, 3.11, 3.12, 3.13 e 3.14;
+- i test `network` sugli stessi sistemi operativi, con Python 3.10 e 3.14. Tra questi c'è la verifica del certificato di `sit.cittametropolitana.na.it`: l'esecuzione settimanale segnala se il server cambia certificato.
 
 ## Novità
 
