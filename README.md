@@ -87,6 +87,27 @@ La GitHub Action [`.github/workflows/test.yml`](.github/workflows/test.yml) eseg
 - i test offline su Linux, Windows e macOS, con Python 3.10, 3.11, 3.12, 3.13 e 3.14;
 - i test `network` sugli stessi sistemi operativi, con Python 3.10 e 3.14. Tra questi c'è la verifica del certificato di `sit.cittametropolitana.na.it`: l'esecuzione settimanale segnala se il server cambia certificato.
 
+## Pubblicazione su PyPI
+
+La GitHub Action [`.github/workflows/release.yml`](.github/workflows/release.yml) pubblica il package su PyPI ogni volta che viene pubblicata una release su GitHub. Creare e pushare solo un tag, senza release, non avvia la pubblicazione.
+
+Per pubblicare una nuova versione:
+
+1. aggiornare `version` in `pyproject.toml` e il [CHANGELOG](CHANGELOG.md), poi unire le modifiche in `main`;
+2. su GitHub, da *Releases* → *Draft a new release*, creare un tag uguale alla versione, per esempio `2.0.0` (va bene anche `v2.0.0`), e pubblicare la release.
+
+La Action:
+
+1. verifica che il tag corrisponda alla versione di `pyproject.toml` e che il package sia `lidar-cmn`, altrimenti si ferma senza pubblicare;
+2. esegue i test offline;
+3. prepara il wheel e il sorgente (`python -m build`), li controlla con `twine check` e verifica che il wheel contenga i dati di `geodata` e il certificato di `certificates`;
+4. li pubblica su PyPI con il *Trusted Publishing* dell'ambiente GitHub `pypi`, senza token salvati nei secret.
+
+Configurazione da fare una sola volta, prima della prima release:
+
+- su PyPI, nel progetto [`lidar-cmn`](https://pypi.org/manage/project/lidar-cmn/settings/publishing/), da *Manage* → *Publishing*, aggiungere un *trusted publisher* GitHub con questi dati: owner `MaxDragonheart`, repository `lidar_cmn`, workflow `release.yml`, ambiente `pypi`;
+- su GitHub, nel repository, da *Settings* → *Environments*, creare l'ambiente `pypi`. È facoltativo: se manca, GitHub lo crea al primo avvio. Lì si possono aggiungere regole di protezione, per esempio l'approvazione manuale prima della pubblicazione.
+
 ## Novità
 
 Vedi il [CHANGELOG](CHANGELOG.md).

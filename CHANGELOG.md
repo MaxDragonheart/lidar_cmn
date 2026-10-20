@@ -29,6 +29,7 @@ Le modifiche rilevanti di ogni versione. Il formato segue [Keep a Changelog](htt
 - `download_data` non ritenta i file il cui certificato non si può verificare.
 - Pagina Certificato SSL della documentazione.
 - GitHub Action `.github/workflows/test.yml`. Esegue i test offline su Linux, Windows e macOS con Python dalla 3.10 alla 3.14, e i test `network` sugli stessi sistemi con Python 3.10 e 3.14. Gira a ogni push e pull request, e ogni settimana per notare i cambiamenti del server.
+- GitHub Action `.github/workflows/release.yml`: pubblica il package su PyPI quando viene pubblicata una release su GitHub con il tag uguale alla versione. Usa il Trusted Publishing, senza token. Prima di pubblicare verifica il tag, esegue i test offline e controlla che il wheel contenga i dati e il certificato del package.
 - `target_area`: parametro `use_bbox`, per selezionare i tasselli sul rettangolo d'ingombro come nelle versioni precedenti.
 - `lidar_cmn.__version__`.
 - Docstring in stile Google per tutti i moduli, le classi e le funzioni, con descrizione di argomenti, valori restituiti, eccezioni ed esempi; nella documentazione, pagina Config con le impostazioni del package.
