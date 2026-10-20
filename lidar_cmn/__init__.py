@@ -8,8 +8,9 @@ area and downloads them.
 Modules:
     vector: Read the tile index and the boundaries, select the tiles of an area.
     download: Download a selection of tiles.
-    generic: Paths, folders and download of a single file.
-    config: Paths of the data shipped with the package and other settings.
+    generic: Paths, folders, SSL context and download of a single file.
+    config: Paths of the data and of the certificates shipped with the
+        package and other settings.
 
 Attributes:
     __version__ (str): Version of the installed package, `"unknown"` if the

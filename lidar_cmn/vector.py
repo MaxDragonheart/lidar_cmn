@@ -19,7 +19,7 @@ from lidar_cmn.config import (
     lidar_crs, lidar_types, limiti_amministrativi_layer, limiti_amministrativi_path, quadro_unione_path,
     wfs_layers, wfs_url
 )
-from lidar_cmn.generic import check_path
+from lidar_cmn.generic import check_path, ssl_context
 
 
 def read_vector(
@@ -137,7 +137,7 @@ def read_lidar_index(lidar_type: str, source: str = "local", timeout: float = 12
             "srsName": lidar_crs,
             "outputFormat": "application/json",
         })
-        with request.urlopen(f"{wfs_url}?{parameters}", timeout=timeout) as response:
+        with request.urlopen(f"{wfs_url}?{parameters}", timeout=timeout, context=ssl_context()) as response:
             features = json.load(response)["features"]
         index = GeoDataFrame.from_features(features, crs=lidar_crs)
     else:

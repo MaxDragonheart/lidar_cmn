@@ -1,16 +1,19 @@
-"""Generic utilities: paths, folders and download of a single file.
+"""Generic utilities: paths, folders, SSL context and download of a single file.
 
 The other modules of the package use these functions, but they work with any
 path and any url.
 """
 import shutil
+import ssl
+from functools import cache
 from pathlib import Path
 from typing import Optional, Union
 from urllib import request
 
+import certifi
 from fsspec import AbstractFileSystem, get_fs_token_paths
 
-from lidar_cmn.config import logger
+from lidar_cmn.config import intermediate_certificates_path, logger
 
 
 def check_path(path: Union[str, Path]) -> Path:
@@ -73,7 +76,48 @@ def make_folder(destination_folder: Path):
         logger.info(f"Folder created. Path: {destination_folder}")
 
 
-def download_from_url(url: str, destination: Path, timeout: float = 60) -> Path:
+@cache
+def ssl_context() -> ssl.SSLContext:
+    """Make the SSL context of the HTTPS connections of the package.
+
+    The server of Città Metropolitana di Napoli, sit.cittametropolitana.na.it,
+    sends only its own certificate, without the intermediate certificate that
+    signed it. Python can't verify an incomplete chain, unlike the browsers
+    and curl on Windows, which download the missing intermediate certificate.
+    The context trusts:
+
+    - the certificates of the operating system, as `ssl.create_default_context`,
+      also those set with the `SSL_CERT_FILE` and `SSL_CERT_DIR` environment
+      variables;
+    - the root certificates of certifi, the same on every operating system;
+    - the intermediate certificates shipped with the package, in
+      `lidar_cmn.config.intermediate_certificates_path`.
+
+    The certificate of the server and its hostname are always verified. The
+    context is made once and shared by all the connections: don't modify it.
+    See the page Certificato SSL of the documentation.
+
+    Returns:
+        The SSL context.
+
+    Examples:
+        >>> context = ssl_context()
+        >>> context.verify_mode == ssl.CERT_REQUIRED and context.check_hostname
+        True
+    """
+    context = ssl.create_default_context()
+    context.load_verify_locations(cafile=certifi.where())
+    context.load_verify_locations(cafile=intermediate_certificates_path)
+
+    return context
+
+
+def download_from_url(
+        url: str,
+        destination: Path,
+        timeout: float = 60,
+        context: Optional[ssl.SSLContext] = None
+) -> Path:
     """Download a file from a url into a folder.
 
     The file is written to a temporary `.part` file, renamed only when the
@@ -87,6 +131,9 @@ def download_from_url(url: str, destination: Path, timeout: float = 60) -> Path:
             doesn't exist.
         timeout: Seconds to wait for the server, when connecting and between
             two blocks of data.
+        context: SSL context of the HTTPS urls. If None, uses `ssl_context`,
+            which verifies the certificate of sit.cittametropolitana.na.it on
+            every operating system.
 
     Returns:
         Path of the downloaded file.
@@ -95,7 +142,8 @@ def download_from_url(url: str, destination: Path, timeout: float = 60) -> Path:
         urllib.error.HTTPError: If the server answers with an HTTP error, e.g.
             404 Not Found.
         urllib.error.URLError: If the server is unreachable or doesn't answer
-            within timeout.
+            within timeout, or if its certificate can't be verified: then the
+            `reason` of the error is an `ssl.SSLCertVerificationError`.
         TimeoutError: If the server stops sending the file for more than
             timeout seconds.
         Exception: If the server returns an HTML page instead of the file, as
@@ -114,9 +162,11 @@ def download_from_url(url: str, destination: Path, timeout: float = 60) -> Path:
     download_path = destination.joinpath(file_name)
     temporary_path = destination.joinpath(f"{file_name}.part")
     make_folder(destination_folder=destination)
+    if context is None:
+        context = ssl_context()
 
     try:
-        with request.urlopen(url, timeout=timeout) as response:
+        with request.urlopen(url, timeout=timeout, context=context) as response:
             # Proxies and error pages answer with HTML instead of the file
             if "text/html" in response.headers.get("Content-Type", ""):
                 raise Exception(f"{url} returned an HTML page instead of the file.")

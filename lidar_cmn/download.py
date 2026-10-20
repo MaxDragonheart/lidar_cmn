@@ -4,10 +4,11 @@ The selection is a GeoDataFrame with the `url` column, such as the tile index
 returned by `lidar_cmn.vector.read_lidar_index` or a part of it selected with
 `lidar_cmn.vector.target_area`.
 """
+import ssl
 import time
 from pathlib import Path
 from typing import List, Union
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 from geopandas import GeoDataFrame
 from tqdm import tqdm
@@ -71,9 +72,13 @@ def _is_permanent(error: Exception) -> bool:
 
     Returns:
         True for the HTTP client errors, e.g. 404 Not Found, except 408 Request
-        Timeout and 429 Too Many Requests; False otherwise.
+        Timeout and 429 Too Many Requests, and for the certificates of the
+        server that can't be verified; False otherwise.
     """
-    return isinstance(error, HTTPError) and error.code < 500 and error.code not in (408, 429)
+    if isinstance(error, HTTPError):
+        return error.code < 500 and error.code not in (408, 429)
+
+    return isinstance(error, URLError) and isinstance(error.reason, ssl.SSLCertVerificationError)
 
 
 def download_data(
@@ -93,7 +98,8 @@ def download_data(
     The valid files already in the folder are skipped, unless overwrite is
     True: if the download stops, run the function again to resume it. Each
     file is downloaded up to retries times, waiting 2, 4, 8... seconds between
-    the attempts; the HTTP client errors, e.g. 404 Not Found, aren't retried.
+    the attempts; the HTTP client errors, e.g. 404 Not Found, and the
+    certificates of the server that can't be verified aren't retried.
     A file that still fails doesn't stop the download of the others and is
     reported at the end.
 

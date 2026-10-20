@@ -56,6 +56,10 @@ Con `target=None`, invece, `target_area` seleziona 5158 tasselli su 5451: esclud
 
 `read_lidar_index` legge l'indice dei tasselli, con l'URL di ciascun file nella colonna `url`. Con `source="local"` (predefinito) legge quello incluso nel package; con `source="wfs"` legge quello ufficiale dal servizio WFS di Città Metropolitana di Napoli, utile se gli indirizzi dei file dovessero cambiare di nuovo.
 
+### Certificato SSL del server
+
+Il server di Città Metropolitana di Napoli, `sit.cittametropolitana.na.it`, invia una catena di certificati incompleta: manca il certificato intermedio *Sectigo Public Server Authentication CA DV R36*. Senza correzioni Python non riesce a verificarlo e i download falliscono con `CERTIFICATE_VERIFY_FAILED`, sempre su Linux e macOS, a volte su Windows. Il package include il certificato intermedio mancante e le radici di `certifi` e li usa in tutte le connessioni HTTPS, con la verifica dei certificati sempre attiva: non serve nessuna configurazione. Origine del problema, soluzione e manutenzione sono descritte nella pagina [Certificato SSL](certificato_ssl.md).
+
 ### Messaggi di log
 
 Il package non configura il logging. Per vederne i messaggi:

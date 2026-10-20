@@ -12,6 +12,7 @@ geopandas = "^1.0.1"
 pyogrio = ">=0.9.0"
 fsspec = ">=2024.2.0"
 tqdm = "^4.66.2"
+certifi = ">=2023.7.22"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -2,9 +2,10 @@
 
 Le modifiche rilevanti di ogni versione. Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e la numerazione delle versioni segue [Semantic Versioning](https://semver.org/lang/it/).
 
-## [2.0.0] - 2026-10-15
+## [2.0.0] - 2026-10-20
 
 ### Corretto
+- I download da `https://sit.cittametropolitana.na.it` fallivano con `CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate`, sempre su Linux e macOS e su Windows quando il certificato intermedio non era già nella cache di sistema. Il server invia una catena di certificati incompleta, senza l'intermedio *Sectigo Public Server Authentication CA DV R36*, e Python non lo scarica da solo. Il package ora include l'intermedio e lo usa in tutte le connessioni HTTPS, insieme ai certificati del sistema e alle radici di `certifi`, con la verifica dei certificati sempre attiva. Dettagli nella pagina [Certificato SSL](docs/certificato_ssl.md) della documentazione.
 - Il download falliva al primo file: gli URL dei tasselli nell'indice incluso nel package puntavano a `http://sit.cittametropolitana.na.it/cecosca/RILIEVO/...`, non più raggiungibile. Sono stati aggiornati ai nuovi indirizzi pubblicati da Città Metropolitana di Napoli, `https://sit.cittametropolitana.na.it/documenti/territorio/lidar_asc_dtm/` per il DTM e `https://sit.cittametropolitana.na.it/documenti/territorio/lidar_asc/` per il DSM. Geometrie e altri attributi dell'indice sono invariati.
 - I dati di base (indice dei tasselli e limiti amministrativi) non erano inclusi nel package installato con `pip`: ora sono in `lidar_cmn/geodata` e si leggono con `read_lidar_index` e `read_boundaries`.
 - `download_data` si fermava al primo errore e, rilanciato, scaricava di nuovo tutti i file. Ora salta i file già scaricati, ritenta quelli falliti e alla fine segnala quelli non scaricati con `DownloadError`.
@@ -21,11 +22,16 @@ Le modifiche rilevanti di ogni versione. Il formato segue [Keep a Changelog](htt
 - `read_lidar_index(lidar_type, source)`: indice dei tasselli incluso nel package o, con `source="wfs"`, quello ufficiale del servizio WFS di Città Metropolitana di Napoli.
 - `read_boundaries()`: limiti dei comuni della Città Metropolitana inclusi nel package.
 - `download_data`: parametri `overwrite`, `retries`, `timeout` e `max_consecutive_failures`; eccezione `DownloadError`; funzione `is_valid_file`.
-- `download_from_url`: parametro `timeout`.
+- `download_from_url`: parametri `timeout` e `context` (contesto SSL).
+- `lidar_cmn.generic.ssl_context()`: contesto SSL del package, usato da `download_from_url`, `download_data` e `read_lidar_index(source="wfs")`.
+- `lidar_cmn/certificates/intermediate_certificates.pem`, con il certificato intermedio mancante nella catena del server, e le impostazioni `certificates_path` e `intermediate_certificates_path` in `lidar_cmn.config`.
+- Dipendenza `certifi` (≥ 2023.7.22, la prima versione con la radice *Sectigo Public Server Authentication Root R46*), per avere le stesse radici su ogni sistema operativo.
+- `download_data` non ritenta i file il cui certificato non si può verificare.
+- Pagina Certificato SSL della documentazione.
 - `target_area`: parametro `use_bbox`, per selezionare i tasselli sul rettangolo d'ingombro come nelle versioni precedenti.
 - `lidar_cmn.__version__`.
 - Docstring in stile Google per tutti i moduli, le classi e le funzioni, con descrizione di argomenti, valori restituiti, eccezioni ed esempi; nella documentazione, pagina Config con le impostazioni del package.
-- Test offline con un server HTTP locale e test `network` sui server di Città Metropolitana di Napoli.
+- Test offline con un server HTTP locale e con un server HTTPS locale che invia una catena di certificati incompleta (certificati di prova in `tests/data/tls`), e test `network` sui server di Città Metropolitana di Napoli.
 
 ### Modificato (non retrocompatibile)
 - `target_area` seleziona i tasselli che si sovrappongono al confine dell'area: per la stessa area restituisce meno tasselli (ad esempio 566 invece di 870 per Napoli), con le geometrie intere dei tasselli invece di quelle ritagliate sul rettangolo d'ingombro. `use_bbox=True` ripristina la selezione precedente.

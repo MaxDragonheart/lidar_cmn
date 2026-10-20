@@ -12,6 +12,7 @@ nav:
       - Vector: ./vector.md
       - Config: ./config.md
   - Tutorial: ./tutorial.md
+  - Certificato SSL: ./certificato_ssl.md
 theme:
   name: material
   palette:

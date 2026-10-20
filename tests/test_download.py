@@ -79,6 +79,21 @@ def test_download_data_stops(server, no_sleep, tmp_path: Path):
     assert len(error.value.urls) == 2
 
 
+def test_download_data_certificate(https_server, no_sleep, tmp_path: Path, caplog):
+    print("test_download_data_certificate")
+    # ssl_context doesn't trust the certificates of the test server
+    url = f"{https_server.url}/000001.asc"
+
+    with pytest.raises(DownloadError) as error:
+        download_data(selection=selection_of([url]), output_folder=tmp_path, output_folder_name="dtm")
+
+    assert error.value.urls == [url]
+    # A certificate that can't be verified isn't retried
+    attempts = [record for record in caplog.records if record.getMessage().startswith("Attempt")]
+    assert len(attempts) == 1
+    assert "CERTIFICATE_VERIFY_FAILED" in attempts[0].getMessage()
+
+
 @pytest.mark.network
 @pytest.mark.parametrize("lidar_type", ["dtm", "dsm"])
 def test_download_lidar_data(lidar_type: str, tmp_path: Path):
