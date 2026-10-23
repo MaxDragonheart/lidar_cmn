@@ -1,0 +1,116 @@
+# Publication of the package on PyPI when a release is published on GitHub.
+# The tag of the release must be the version in pyproject.toml, e.g. 2.0.0 or
+# v2.0.0. The package is published with Trusted Publishing: PyPI trusts this
+# workflow and the environment pypi, no token is stored in the secrets.
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Validate release metadata
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import tomllib
+
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          package_name = pyproject["tool"]["poetry"]["name"]
+          version = pyproject["tool"]["poetry"]["version"]
+          release_tag = os.environ["GITHUB_REF_NAME"]
+
+          if package_name != "lidar-cmn":
+              raise SystemExit(
+                  f"Expected package name 'lidar-cmn', found {package_name!r}."
+              )
+
+          allowed_tags = {version, f"v{version}"}
+          if release_tag not in allowed_tags:
+              raise SystemExit(
+                  f"Release tag {release_tag!r} does not match pyproject version {version!r}."
+              )
+          PY
+
+      - name: Offline tests
+        run: |
+          python -m pip install . pytest
+          python -m pytest -m "not network"
+
+      - name: Install build tools
+        run: python -m pip install --upgrade build twine
+
+      - name: Build distributions
+        run: python -m build
+
+      - name: Check distributions
+        run: python -m twine check dist/*
+
+      # Versions before 2.0.0 didn't ship the data of the package
+      - name: Check the data shipped in the wheel
+        run: |
+          python - <<'PY'
+          import pathlib
+          import zipfile
+
+          wheel = next(pathlib.Path("dist").glob("*.whl"))
+          names = set(zipfile.ZipFile(wheel).namelist())
+          required = {
+              "lidar_cmn/geodata/quadro_unione_lidar.gpkg",
+              "lidar_cmn/geodata/limiti_amministrativi.gpkg",
+              "lidar_cmn/certificates/intermediate_certificates.pem",
+          }
+          missing = sorted(required - names)
+          if missing:
+              raise SystemExit(f"{wheel.name} doesn't contain {missing}.")
+          PY
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v7
+        with:
+          name: python-package-distributions
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: Publish distributions to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/lidar-cmn
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v8
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          print-hash: true
