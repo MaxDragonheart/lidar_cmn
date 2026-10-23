@@ -52,6 +52,24 @@ Con `target=None`, invece, `target_area` seleziona 5158 tasselli su 5451: esclud
 - Ogni file viene tentato fino a `retries` volte (3), tranne in caso di errori definitivi come 404 Not Found; `timeout` (30 s) è l'attesa massima della risposta del server.
 - Un file non scaricato non ferma gli altri: alla fine `download_data` solleva `DownloadError`, con gli URL dei file mancanti in `DownloadError.urls`. Il download si ferma dopo `max_consecutive_failures` (5) file falliti di seguito, ad esempio quando il server non è raggiungibile.
 
+### Mosaico dei tasselli (VRT)
+
+```python
+from lidar_cmn.raster import build_vrt
+
+summary = build_vrt(folder=Path("lidar/dtm"), lidar_type="dtm")   # crea lidar/dtm.vrt
+```
+
+`build_vrt` riunisce i tasselli scaricati in un raster virtuale GDAL (VRT), che QGIS e GDAL leggono come un unico raster senza copiare i dati. Il VRT ha celle di 1 m e dichiara EPSG:32633, che i file `.asc` non dichiarano.
+
+I tasselli non sono tutti sulla stessa griglia:
+
+- quelli su una griglia spostata vengono spostati sulla cella più vicina del VRT, di meno di mezza cella;
+- dove due tasselli si sovrappongono si vede il rilievo 2012;
+- i tasselli con celle diverse da 1 m vengono ricampionati se si sovrappongono ai comuni della Città Metropolitana, altrimenti vengono esclusi.
+
+`summary.excluded` elenca i tasselli esclusi, con il motivo. `write_prj_files` scrive un `.prj` per ogni tassello. Dettagli nella pagina [Mosaico VRT](mosaico_vrt.md).
+
 ### Indice dei tasselli
 
 `read_lidar_index` legge l'indice dei tasselli, con l'URL di ciascun file nella colonna `url`. Con `source="local"` (predefinito) legge quello incluso nel package; con `source="wfs"` legge quello ufficiale dal servizio WFS di Città Metropolitana di Napoli, utile se gli indirizzi dei file dovessero cambiare di nuovo.

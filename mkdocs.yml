@@ -8,10 +8,12 @@ nav:
   - Home: ./index.md
   - References:
       - Download: ./download.md
+      - Raster: ./raster.md
       - Generic: ./generic.md
       - Vector: ./vector.md
       - Config: ./config.md
   - Tutorial: ./tutorial.md
+  - Mosaico VRT: ./mosaico_vrt.md
   - Certificato SSL: ./certificato_ssl.md
 theme:
   name: material

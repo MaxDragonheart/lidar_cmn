@@ -39,8 +39,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: pyproject.toml
+      # rasterio reads the VRT in the tests of lidar_cmn.raster
       - name: Install the package
-        run: python -m pip install . pytest
+        run: python -m pip install . pytest rasterio
       - name: Offline tests
         run: python -m pytest -m "not network"
 
